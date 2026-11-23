@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#123b52">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png" type="image/png">
+<title>تقسیم‌کننده پیامک فارسی</title>
+<style>
+:root{color-scheme:light;--ink:#173042;--muted:#607482;--line:#d9e3e9;--bg:#f3f7f9;--accent:#176b87;--accent2:#e7f2f6;--good:#18734b;--warn:#8b5b12}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,"Segoe UI",sans-serif;line-height:1.8}
+main{max-width:850px;margin:32px auto;padding:0 16px}
+header{background:linear-gradient(135deg,#123b52,#176b87);color:#fff;padding:26px;border-radius:18px;margin-bottom:18px}
+h1{font-size:1.45rem;margin:0 0 6px}
+header p{margin:0;color:#e5f1f5}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 5px 18px #1730420b}
+label{display:block;font-weight:700;margin-bottom:8px}
+textarea{width:100%;min-height:190px;resize:vertical;border:1px solid #b9cbd5;border-radius:12px;padding:14px;font:inherit;line-height:1.9;color:var(--ink);outline:none}
+textarea:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #176b871c}
+.controls{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-top:14px}
+.field{min-width:150px;flex:1}
+input[type=number]{width:100%;padding:10px;border:1px solid #b9cbd5;border-radius:10px;font:inherit}
+button{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer;background:var(--accent);color:white}
+button.secondary{background:var(--accent2);color:var(--ink);border:1px solid var(--line)}
+button:focus-visible{outline:3px solid #8bc4d7;outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat{background:#f4f8fa;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stat strong{display:block;font-size:1.35rem;color:var(--accent)}
+.stat span{font-size:.85rem;color:var(--muted)}
+.note{font-size:.9rem;color:var(--muted);margin:10px 0 0}
+.warning{background:#fff8e9;border:1px solid #f0d9a8;color:#6e4a10;padding:12px 14px;border-radius:12px}
+.result-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.segment{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px}
+.segment-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.segment-text{white-space:pre-wrap;overflow-wrap:anywhere;background:#f7fafb;border-radius:8px;padding:12px;direction:rtl}
+.segment small{color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:20px}
+footer{font-size:.85rem;color:var(--muted);padding:10px 2px 28px}
+@media(max-width:560px){main{margin:16px auto}.card{padding:15px}.stats{gap:6px}.stat{padding:8px}.stat strong{font-size:1.1rem}.controls button{width:100%}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<h1>تقسیم‌کننده پیامک فارسی</h1>
+<p>متن طولانی را به پیام‌های مستقل و کوتاه تقسیم کن تا بتوانی هر بخش را جداگانه به‌صورت SMS بفرستی.</p>
+</header>
+
+<section class="card" id="installCard" style="display:none">
+  <div class="result-head">
+    <div>
+      <strong>نصب روی گوشی</strong>
+      <p class="note" style="margin:3px 0 0">می‌توانی ابزار را مانند یک اپلیکیشن مستقل به صفحه اصلی اضافه کنی.</p>
+    </div>
+    <button id="installButton">نصب اپلیکیشن</button>
+  </div>
+  <p id="installHelp" class="note">اگر دکمه نصب در مرورگر نمایش داده نشد، از منوی مرورگر گزینه «Add to Home screen» یا «Install app» را انتخاب کن.</p>
+</section>
+
+<section class="card">
+<label for="source">متن پیام</label>
+<textarea id="source" placeholder="متن فارسی‌ات را اینجا وارد یا جای‌گذاری کن…"></textarea>
+<div class="controls">
+  <div class="field">
+    <label for="limit">حداکثر کاراکتر هر بخش</label>
+    <input id="limit" type="number" min="1" step="1" value="65" inputmode="numeric" aria-describedby="limitHelp">
+    <p class="note" id="limitHelp">هر عدد صحیح مثبت دلخواهی وارد کن؛ برای این تنظیم سقف از پیش تعیین‌شده‌ای وجود ندارد. با تغییر عدد، متن دوباره تقسیم می‌شود.</p>
+  </div>
+  <button id="split">تقسیم متن</button>
+  <button id="clear" class="secondary">پاک‌کردن</button>
+</div>
+<p class="note">عدد پیش‌فرض ۶۵ برای سازگاری بهتر با SMS فارسی انتخاب شده است؛ مقدار تقسیم در این ابزار محدودیت بالایی ندارد. شمارش بر اساس نویسه‌های دیداری (از جمله حروف دارای علامت) انجام می‌شود.</p>
+<div class="stats" aria-live="polite">
+  <div class="stat"><strong id="totalChars">۰</strong><span>کاراکتر متن</span></div>
+  <div class="stat"><strong id="totalParts">۰</strong><span>تعداد پیام پیشنهادی</span></div>
+  <div class="stat"><strong id="maxCount">۶۵</strong><span>تنظیم کاراکتر هر پیام</span></div>
+</div>
+</section>
+
+<section class="card">
+<div class="result-head">
+<h2 style="font-size:1.1rem;margin:0">پیام‌های آماده ارسال</h2>
+<button id="copyAll" class="secondary" disabled>کپی همه بخش‌ها</button>
+</div>
+<div id="results" class="empty">پس از وارد کردن متن، روی «تقسیم متن» بزن.</div>
+</section>
+
+<div class="warning">
+<strong>توجه:</strong> برای اینکه پیام‌ها SMS بمانند، هر بخش را جداگانه ارسال کن؛ همه بخش‌ها را در یک کادر پیام به هم نچسبان. قبل از ارسال، در برنامه پیام‌رسان بررسی کن که نوع پیام SMS باشد، نه MMS.
+</div>
+<footer>
+این ابزار فقط متن را در همین مرورگر تقسیم می‌کند و چیزی به اینترنت یا سرور ارسال نمی‌کند. هزینه و امکان ارسال نهایی به تنظیمات گوشی و اپراتور بستگی دارد.
+</footer>
+</main>
+<script>
+(() => {
+  const source = document.getElementById('source');
+  const limitInput = document.getElementById('limit');
+  const results = document.getElementById('results');
+  const totalChars = document.getElementById('totalChars');
+  const totalParts = document.getElementById('totalParts');
+  const maxCount = document.getElementById('maxCount');
+  const copyAll = document.getElementById('copyAll');
+  let parts = [];
+
+  const fa = n => new Intl.NumberFormat('fa-IR').format(n);
+  function graphemes(text) {
+    if (typeof Intl.Segmenter === 'function') {
+      return [...new Intl.Segmenter('fa', {granularity:'grapheme'}).segment(text)].map(x => x.segment);
+    }
+    return Array.from(text);
+  }
+  function splitText(text, max) {
+    const units = graphemes(text);
+    const output = [];
+    for (let i = 0; i < units.length; i += max) {
+      output.push(units.slice(i, i + max).join(''));
+    }
+    return output;
+  }
+  function render() {
+    const text = source.value;
+    const rawLimit = Number(limitInput.value);
+    const validLimit = Number.isSafeInteger(rawLimit) && rawLimit >= 1;
+    const max = validLimit ? rawLimit : 65;
+    if (!validLimit && limitInput.value.trim() === '') limitInput.value = '65';
+    const units = graphemes(text);
+    parts = text.length ? splitText(text, max) : [];
+    totalChars.textContent = fa(units.length);
+    totalParts.textContent = fa(parts.length);
+    maxCount.textContent = fa(max);
+    copyAll.disabled = parts.length === 0;
+    if (!parts.length) {
+      results.className = 'empty';
+      results.textContent = 'پس از وارد کردن متن، روی «تقسیم متن» بزن.';
+      return;
+    }
+    results.className = '';
+    results.replaceChildren();
+    parts.forEach((part, index) => {
+      const card = document.createElement('div');
+      card.className = 'segment';
+      const top = document.createElement('div');
+      top.className = 'segment-top';
+      const label = document.createElement('strong');
+      label.textContent = `بخش ${fa(index + 1)} از ${fa(parts.length)}`;
+      const count = document.createElement('small');
+      count.textContent = `${fa(graphemes(part).length)} کاراکتر`;
+      top.append(label, count);
+      const body = document.createElement('div');
+      body.className = 'segment-text';
+      body.textContent = part;
+      const btn = document.createElement('button');
+      btn.className = 'secondary';
+      btn.textContent = 'کپی این بخش';
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(part);
+          btn.textContent = 'کپی شد';
+          setTimeout(() => btn.textContent = 'کپی این بخش', 1300);
+        } catch {
+          fallbackCopy(part);
+          btn.textContent = 'متن انتخاب شد';
+        }
+      });
+      card.append(top, body, btn);
+      results.append(card);
+    });
+  }
+  function fallbackCopy(text) {
+    const temp = document.createElement('textarea');
+    temp.value = text;
+    document.body.append(temp);
+    temp.select();
+    try { document.execCommand('copy'); } catch {}
+    temp.remove();
+  }
+  document.getElementById('split').addEventListener('click', render);
+  document.getElementById('clear').addEventListener('click', () => {
+    source.value = '';
+    render();
+    source.focus();
+  });
+  limitInput.addEventListener('input', () => {
+    const value = Number(limitInput.value);
+    if (Number.isSafeInteger(value) && value >= 1) render();
+  });
+  limitInput.addEventListener('change', () => {
+    const value = Number(limitInput.value);
+    if (!Number.isSafeInteger(value) || value < 1) limitInput.value = '65';
+    render();
+  });
+  copyAll.addEventListener('click', async () => {
+    const all = parts.map((p, i) => `بخش ${i + 1}:\n${p}`).join('\n\n');
+    try {
+      await navigator.clipboard.writeText(all);
+      copyAll.textContent = 'همه بخش‌ها کپی شدند';
+      setTimeout(() => copyAll.textContent = 'کپی همه بخش‌ها', 1500);
+    } catch { fallbackCopy(all); }
+  });
+  source.addEventListener('input', () => {
+    // Keep the preview responsive while typing.
+    render();
+  });
+  render();
+
+  // PWA installation: the browser controls when installation is available.
+  let deferredInstallPrompt = null;
+  const installCard = document.getElementById('installCard');
+  const installButton = document.getElementById('installButton');
+  const installHelp = document.getElementById('installHelp');
+
+  window.addEventListener('beforeinstallprompt', (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    installCard.style.display = 'block';
+    installButton.style.display = 'inline-block';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installButton.textContent = 'اپلیکیشن نصب شد';
+    installButton.disabled = true;
+    installHelp.textContent = 'برنامه به صفحه اصلی دستگاه اضافه شد.';
+    deferredInstallPrompt = null;
+  });
+
+  installButton.addEventListener('click', async () => {
+    if (!deferredInstallPrompt) {
+      installHelp.textContent = 'برای نصب، فایل باید از یک وب‌سایت امن (HTTPS) باز شده باشد. در Chrome منوی سه‌نقطه را باز کن و «Install app» یا «Add to Home screen» را بزن.';
+      return;
+    }
+    deferredInstallPrompt.prompt();
+    const choice = await deferredInstallPrompt.userChoice;
+    if (choice && choice.outcome === 'accepted') {
+      installButton.textContent = 'در حال نصب…';
+    }
+    deferredInstallPrompt = null;
+  });
+
+  // Service workers require HTTPS (or localhost); they do not work from file://.
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {
+      installHelp.textContent = 'نصب آفلاین در این میزبانی فعال نشد؛ می‌توانی از منوی مرورگر گزینه افزودن به صفحه اصلی را بررسی کنی.';
+    });
+  } else {
+    installCard.style.display = 'block';
+    installButton.style.display = 'inline-block';
+    installHelp.textContent = 'برای نصب واقعی به شکل اپلیکیشن، این بسته باید روی یک میزبان HTTPS قرار بگیرد. بازکردن مستقیم فایل HTML از حافظه گوشی امکان نصب PWA را فعال نمی‌کند.';
+  }
+
+})();
+</script>
+</body>
+</html>
